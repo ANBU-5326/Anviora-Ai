@@ -1,0 +1,43 @@
+ from ai.llm.gemini_client import ask_gemini
+
+SKILLS_SYSTEM_PROMPT = """
+You are a technical skills assessor for engineering students.
+You evaluate skill levels and provide actionable learning paths.
+Always respond in valid JSON format only.
+"""
+
+async def analyze_skills_gap(skills: list, target_role: str = "Software Engineer") -> dict:
+    """Analyze skill gaps for a target role."""
+    skills_str = ", ".join([f"{s['subject']} ({s['score']}%)" for s in skills]) if skills else "No skills listed"
+    
+    prompt = f"""
+    Analyze skill gaps for a student targeting: {target_role}
+    Current skills: {skills_str}
+    
+    Return ONLY JSON:
+    {{
+        "missing_skills": ["skill1", "skill2", "skill3"],
+        "weak_skills": ["skill with low score"],
+        "strong_skills": ["skill with high score"],
+        "learning_path": [
+            {{"skill": "...", "priority": "high/medium/low", "resources": ["resource1", "resource2"], "weeks_needed": 2}}
+        ],
+        "overall_readiness": <0-100>,
+        "summary": "2-3 sentence assessment"
+    }}
+    """
+    import json
+    response = await ask_gemini(prompt, SKILLS_SYSTEM_PROMPT)
+    
+    try:
+        clean = response.strip().replace("```json", "").replace("```", "").strip()
+        return json.loads(clean)
+    except Exception:
+        return {
+            "missing_skills": [],
+            "weak_skills": [],
+            "strong_skills": [],
+            "learning_path": [],
+            "overall_readiness": 50,
+            "summary": "Analysis unavailable. Please try again."
+        }

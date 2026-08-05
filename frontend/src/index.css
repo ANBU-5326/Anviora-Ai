@@ -1,0 +1,564 @@
+:root {
+  /* Visual Tokens (Gemini + Instagram + YouTube Fusion) */
+  --bg-primary:     #f8fafc; /* Elegant off-white slate background (Gemini/Instagram canvas style) */
+  --bg-secondary:   #ffffff; /* Clean card white */
+  --bg-tertiary:    #f1f5f9; /* Soft background hover for navigation and fields */
+  
+  /* Brand Accent Colors (Sleek Gemini-like Tech Palette) */
+  --accent-purple:  #6366f1; /* Indigo (Tech Brand Accent) */
+  --accent-blue:    #3b82f6; /* Cobalt Blue (Trust & Cleanliness) */
+  --accent-cyan:    #06b6d4; /* Cyber Cyan */
+  --accent-pink:    #ec4899; /* Bright Rose Pink */
+  --accent-orange:  #f43f5e; /* Soft Youtube Crimson Accent */
+  
+  /* Text Weights and Colors */
+  --text-primary:   #0f172a; /* Obsidian Dark (Near Black) for high readability */
+  --text-secondary: #475569; /* Slate 600 for labels and subtitles */
+  --text-muted:     #94a3b8; /* Slate 400 for placeholder/muted items */
+  --border-color:   #e2e8f0; /* Ultra-thin border tint (Instagram-style fine line) */
+  --bg-card:        var(--bg-secondary);
+
+  /* Gemini Accent Gradients & Shadow Systems */
+  --glass-bg:       rgba(255, 255, 255, 0.95);
+  --glass-border:   rgba(99, 102, 241, 0.08);
+  --glass-glow:     0 4px 20px 0 rgba(99, 102, 241, 0.03);
+  
+  --shadow-sm:      0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-md:      0 4px 12px -2px rgba(15, 23, 42, 0.03), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+  --shadow-lg:      0 20px 25px -5px rgba(15, 23, 42, 0.05), 0 10px 10px -5px rgba(15, 23, 42, 0.02);
+  
+  /* Glowing ring for inputs (Gemini style) */
+  --focus-glow:     0 0 0 3.5px rgba(99, 102, 241, 0.12);
+
+  --font-heading:   'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body:      'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button, input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  outline: none;
+}
+
+/* Subtly Custom Scrollbars (YouTube-like scroll profile) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 99px;
+  border: 2px solid transparent;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.5);
+}
+
+/* Elegant Flat Containers (Instagram Minimalism & Gemini Fine Glowing Board) */
+.glass-panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  border-radius: 16px;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.glass-panel:hover {
+  border-color: rgba(99, 102, 241, 0.2);
+  box-shadow: var(--shadow-md);
+}
+
+.glass-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  border-radius: 14px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(99, 102, 241, 0.25);
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(99, 102, 241, 0.03);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue), var(--accent-cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Gemini Glow Button */
+.glow-button {
+  background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+  color: #ffffff !important;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  border-radius: 24px; /* Fully rounded pill */
+  padding: 10px 22px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.25);
+}
+
+.glow-button:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 20px 0 rgba(99, 102, 241, 0.35);
+  opacity: 0.95;
+}
+
+.glow-button:active {
+  transform: translateY(0);
+}
+
+/* App Shell Layout Styles */
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: var(--bg-primary);
+}
+
+/* Sidebar Overhaul (Instagram Clean Borders + YouTube Pill Selection) */
+.sidebar {
+  width: 260px;
+  height: 100vh;
+  max-height: 100vh;
+  position: sticky;
+  top: 0;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  transition: width 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.sidebar-brand {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.brand-logo {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink), var(--accent-orange));
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 800;
+  font-family: var(--font-heading);
+  box-shadow: 0 3px 10px rgba(99, 102, 241, 0.25);
+}
+
+.brand-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+}
+
+.sidebar-menu {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px 16px; /* Inward padding for rounded pills */
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-item a {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  gap: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 0.92rem;
+  border-radius: 12px; /* Youtube round pill */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-left: none; /* Removed the old line border */
+}
+
+.sidebar-item a:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+/* Active Pill Styles (YouTube / Gemini vibe) */
+.sidebar-item.active a {
+  background-color: rgba(99, 102, 241, 0.08);
+  color: var(--accent-purple);
+  font-weight: 600;
+}
+
+/* Home Link highlight - custom cobalt theme */
+.sidebar-item:first-child.active a {
+  color: var(--accent-blue);
+  background-color: rgba(59, 130, 246, 0.08);
+}
+
+.sidebar-item:first-child a:hover {
+  background-color: rgba(59, 130, 246, 0.04);
+}
+
+.sidebar-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 12px 8px;
+  list-style: none;
+}
+
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--bg-secondary);
+}
+
+.user-profile-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* User avatar with status ring (Instagram Story style) */
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
+  border: 2px solid #ffffff;
+  outline: 2px solid var(--accent-purple); /* Active Ring */
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.user-role {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-primary);
+  transition: background-color 0.3s ease;
+}
+
+/* Elegant Minimal Header */
+.top-nav {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  z-index: 90;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Gemini Glowing Search input */
+.nav-search {
+  display: flex;
+  align-items: center;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  padding: 8px 18px;
+  border-radius: 24px; /* Gemini search bar shape */
+  width: 300px;
+  gap: 10px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-search:focus-within {
+  width: 340px; /* expands gently */
+  border-color: var(--accent-purple);
+  box-shadow: var(--focus-glow);
+  background-color: var(--bg-secondary);
+}
+
+.nav-search input {
+  flex: 1;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+}
+
+.nav-search input::placeholder {
+  color: var(--text-muted);
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nav-icon-btn {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.nav-icon-btn:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+/* Page canvas backdrop with extremely soft radial glows (Gemini Canvas feeling) */
+.page-wrapper {
+  flex: 1;
+  padding: 32px;
+  overflow-y: auto;
+  background: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.03) 0px, transparent 40%),
+              radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.02) 0px, transparent 40%),
+              var(--bg-primary);
+}
+
+.anv-dashboard, .auth-home-container, .profile-page-container {
+  margin: 0 auto !important;
+  max-width: 1440px;
+  width: 100%;
+}
+
+.fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Page Headers */
+.page-header {
+  margin-bottom: 28px;
+}
+
+.page-title {
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.page-description {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* Grid helper */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+/* Mobile Hamburger Toggle Button */
+.mobile-hamburger-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+}
+
+.mobile-sidebar-backdrop {
+  display: none;
+}
+
+/* Comprehensive Responsive Breakpoints */
+@media (max-width: 1024px) {
+  .grid-3, .grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .nav-search {
+    width: 200px;
+  }
+  .nav-search:focus-within {
+    width: 240px;
+  }
+}
+
+@media (max-width: 768px) {
+  .mobile-hamburger-btn {
+    display: flex;
+  }
+
+  .mobile-sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(3px);
+    z-index: 999;
+  }
+
+  .app-container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    width: 260px;
+    height: 100vh;
+    z-index: 1000;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(280px);
+  }
+
+  .sidebar-menu {
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 16px;
+  }
+
+  .sidebar-footer {
+    display: flex;
+  }
+
+  .top-nav {
+    padding: 0 14px;
+    height: 60px;
+  }
+
+  .top-nav-title {
+    font-size: 0.95rem;
+  }
+
+  .nav-logout-desktop {
+    display: none;
+  }
+
+  .page-wrapper {
+    padding: 16px 12px;
+  }
+
+  .grid-2, .grid-3, .grid-4 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Tables & Heatmaps Touch Horizontal Scroll Wrapper */
+  .responsive-table-wrapper, .responsive-scroll-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+  }
+}
+
+@media (max-width: 375px) {
+  .page-wrapper {
+    padding: 12px 8px;
+  }
+  .top-nav {
+    padding: 0 10px;
+  }
+  .top-nav-title {
+    display: none;
+  }
+}

@@ -1,0 +1,59 @@
+from ai.llm.gemini_client import ask_gemini
+
+INTERVIEW_SYSTEM_PROMPT = """
+You are an expert technical interviewer for software engineering positions.
+You ask relevant questions and give detailed, constructive feedback on answers.
+Always respond in valid JSON format only — no extra text outside the JSON.
+"""
+
+async def generate_questions(category: str, count: int = 5) -> list:
+    """Generate interview questions for a given category."""
+    prompt = f"""
+    Generate {count} interview questions for category: {category}
+    
+    Return ONLY a JSON array like this:
+    [
+        {{"id": 1, "question": "...", "difficulty": "easy/medium/hard", "tip": "what to focus on"}},
+        ...
+    ]
+    """
+    import json
+    response = await ask_gemini(prompt, INTERVIEW_SYSTEM_PROMPT)
+    
+    try:
+        clean = response.strip().replace("```json", "").replace("```", "").strip()
+        return json.loads(clean)
+    except Exception:
+        return [{"id": 1, "question": f"Tell me about your experience with {category}.", "difficulty": "medium", "tip": "Be specific"}]
+
+
+async def evaluate_answer(question: str, answer: str, category: str) -> dict:
+    """Evaluate a student's interview answer."""
+    prompt = f"""
+    Evaluate this interview answer:
+    
+    Category: {category}
+    Question: {question}
+    Student's Answer: {answer}
+    
+    Return ONLY JSON with this structure:
+    {{
+        "score": <0-100>,
+        "feedback": "detailed feedback paragraph",
+        "improvements": ["tip 1", "tip 2", "tip 3"],
+        "sample_answer": "a better version of the answer"
+    }}
+    """
+    import json
+    response = await ask_gemini(prompt, INTERVIEW_SYSTEM_PROMPT)
+    
+    try:
+        clean = response.strip().replace("```json", "").replace("```", "").strip()
+        return json.loads(clean)
+    except Exception:
+        return {
+            "score": 50,
+            "feedback": "Could not evaluate answer. Please try again.",
+            "improvements": ["Be more specific", "Use examples", "Structure your answer"],
+            "sample_answer": ""
+        }
