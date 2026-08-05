@@ -64,4 +64,6 @@ Thumbs.db
 *.sqlite
 *.sqlite3
 backend/uploads/
+powershell.bat
+
 
