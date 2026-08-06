@@ -3,13 +3,17 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from app.config.settings import settings
 
+db_url = settings.DATABASE_URL
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+
 # SQLite needs connect_args for threading; PostgreSQL does not
 connect_args = {}
-if settings.DATABASE_URL.startswith("sqlite"):
+if db_url.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
 
 engine = create_engine(
-    settings.DATABASE_URL,
+    db_url,
     connect_args=connect_args,
     echo=settings.DEBUG,  # Log all SQL in debug mode
 )
@@ -78,6 +82,6 @@ def create_all_tables():
         for col_name, col_type in [
             ("timezone", "VARCHAR(50) DEFAULT 'Asia/Kolkata'"),
             ("streak_freezes_remaining", "INTEGER DEFAULT 2"),
-            ("last_streak_freeze_at", "DATETIME"),
+            ("last_streak_freeze_at", "TIMESTAMP" if is_postgres else "DATETIME"),
         ]:
             add_column_if_missing(conn, "coding_stats", col_name, col_type)

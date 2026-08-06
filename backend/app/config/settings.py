@@ -14,8 +14,8 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 10080  # 7 days
 
-    # Database - PostgreSQL
-    DATABASE_URL: str = "postgresql://postgres:admin123@localhost:5432/anviora_db"
+    # Database - SQLite by default (overridden by DATABASE_URL env var if set, e.g. for PostgreSQL on Render)
+    DATABASE_URL: str = "sqlite:///./anviora.db"
 
     # CORS
     CORS_ORIGINS: List[str] = [
