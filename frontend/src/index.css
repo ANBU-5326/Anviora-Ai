@@ -482,10 +482,16 @@ button, input, textarea, select {
   display: none;
 }
 
-/* Comprehensive Responsive Breakpoints & Auto-Fit Engine */
+/* Comprehensive Responsive Breakpoints & Auto-Fit Engine (Length & Breadth Adaptability) */
 img, video, canvas, svg {
   max-width: 100%;
   height: auto;
+}
+
+/* Universal Text Break Safety */
+h1, h2, h3, h4, h5, h6, p, span, a, label, button, td, th {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .recharts-responsive-container {
@@ -493,6 +499,34 @@ img, video, canvas, svg {
   max-width: 100% !important;
 }
 
+/* Tables, Code, Heatmaps Touch Horizontal Scroll Wrappers */
+.responsive-table-wrapper, 
+.responsive-scroll-container,
+.responsive-code-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 6px;
+  max-width: 100%;
+}
+
+/* Scrollable Modal / Overlay Clamping for Height Safety */
+.modal-overlay,
+.dialog-overlay {
+  max-height: 100vh;
+  max-height: 100dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Widescreen Scaling (> 1440px) */
+@media (min-width: 1441px) {
+  .page-wrapper {
+    padding: clamp(24px, 2.5vw, 48px);
+  }
+}
+
+/* Laptop & Tablet Breakdown */
 @media (max-width: 1400px) {
   .grid-4 {
     grid-template-columns: repeat(3, 1fr);
@@ -580,45 +614,37 @@ img, video, canvas, svg {
   }
 
   .page-wrapper {
-    padding: 14px 10px;
+    padding: 12px 10px;
   }
 
   .grid-2, .grid-3, .grid-4 {
     grid-template-columns: 1fr !important;
     gap: 16px;
   }
-
-  /* Tables & Heatmaps Touch Horizontal Scroll Wrapper */
-  .responsive-table-wrapper, .responsive-scroll-container {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 6px;
-  }
 }
 
 @media (max-width: 480px) {
   .page-wrapper {
-    padding: 12px 8px;
+    padding: 10px 8px;
   }
   .page-title {
-    font-size: 1.45rem;
+    font-size: 1.4rem;
   }
   .top-nav {
     padding: 0 10px;
   }
   .nav-search {
-    width: 140px;
-    padding: 6px 12px;
+    width: 130px;
+    padding: 5px 10px;
   }
   .nav-search:focus-within {
-    width: 170px;
+    width: 160px;
   }
 }
 
 @media (max-width: 375px) {
   .page-wrapper {
-    padding: 10px 6px;
+    padding: 8px 6px;
   }
   .top-nav {
     padding: 0 8px;
@@ -630,4 +656,30 @@ img, video, canvas, svg {
     display: none;
   }
 }
+
+/* Height-based media queries (Length adaptability for landscape mobile & short devices) */
+@media (max-height: 600px) {
+  .top-nav {
+    height: 52px;
+  }
+  .page-wrapper {
+    padding: 10px;
+  }
+  .sidebar-brand {
+    height: 52px;
+  }
+  .sidebar-menu {
+    padding: 12px 10px;
+  }
+}
+
+@media (max-height: 480px) {
+  .page-header {
+    margin-bottom: 14px;
+  }
+  .page-title {
+    font-size: 1.25rem;
+  }
+}
+
 

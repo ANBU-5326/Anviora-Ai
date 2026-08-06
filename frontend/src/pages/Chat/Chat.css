@@ -1,7 +1,9 @@
 .chat-container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 140px);
+  height: 100%;
+  min-height: 0;
+  max-height: calc(100dvh - 110px);
   gap: 16px;
 }
 
@@ -347,4 +349,34 @@
 .error-dismiss-btn:hover {
   background-color: rgba(239, 68, 68, 0.12);
   border-color: #ef4444;
+}
+
+@media (max-width: 768px) {
+  .message-bubble-row {
+    max-width: 92%;
+  }
+  .messages-scroll-area {
+    padding: 14px 10px;
+  }
+  .chat-header {
+    padding: 12px 14px;
+  }
+  .chat-title {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .message-bubble-row {
+    max-width: 96%;
+    gap: 8px;
+  }
+  .message-text {
+    padding: 10px 14px;
+    font-size: 0.85rem;
+  }
+  .chat-textarea {
+    font-size: 0.85rem;
+    padding: 10px 12px;
+  }
 }

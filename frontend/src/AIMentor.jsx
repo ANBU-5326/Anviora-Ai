@@ -50,7 +50,7 @@ const NotificationDropdown = ({ onClose }) => {
   const unread = notifications.filter(n => !n.is_read).length;
 
   return (
-    <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: '340px', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', boxShadow: '0 16px 40px rgba(0,0,0,0.35)', zIndex: 9999, overflow: 'hidden' }}>
+    <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, width: 'min(340px, 90vw)', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '12px', boxShadow: '0 16px 40px rgba(0,0,0,0.35)', zIndex: 9999, overflow: 'hidden' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '1px solid var(--border-color)' }}>
         <span style={{ fontWeight: '700', fontSize: '0.95rem', color: 'var(--text-primary)' }}>
           Notifications {unread > 0 && <span style={{ background: '#6366f1', color: '#fff', borderRadius: '999px', fontSize: '0.72rem', padding: '1px 7px', marginLeft: '6px' }}>{unread}</span>}
@@ -64,7 +64,7 @@ const NotificationDropdown = ({ onClose }) => {
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex' }}><X size={16} /></button>
         </div>
       </div>
-      <div style={{ maxHeight: '340px', overflowY: 'auto' }}>
+      <div style={{ maxHeight: 'min(340px, 65dvh)', overflowY: 'auto' }}>
         {loading ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: '32px' }}>
             <div style={{ width: '24px', height: '24px', borderRadius: '50%', border: '2px solid transparent', borderTopColor: '#6366f1', animation: 'spin 0.8s linear infinite' }} />

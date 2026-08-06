@@ -105,11 +105,14 @@ const Login = () => {
     <div style={{
       position: 'relative',
       minHeight: '100vh',
+      minHeight: '100dvh',
       width: '100vw',
+      maxWidth: '100%',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      overflow: 'hidden',
+      overflowY: 'auto',
+      padding: '20px 0',
       fontFamily: "'Open Sans', 'Helvetica Neue', Arial, sans-serif"
     }}>
       {/* Real Live Landing Page in background */}
@@ -137,13 +140,14 @@ const Login = () => {
       {/* Centered Modal Card */}
       <div className="login-modal-card" style={{
         position: 'relative',
-        width: '90%',
-        maxWidth: '390px',
+        width: 'min(92vw, 410px)',
+        maxHeight: '90dvh',
+        overflowY: 'auto',
         backgroundColor: '#ffffff',
         borderRadius: '12px',
         border: '1px solid #d1d5db',
         boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
-        padding: '24px 28px',
+        padding: 'clamp(18px, 4vw, 28px)',
         zIndex: 10,
         display: 'flex',
         flexDirection: 'column',

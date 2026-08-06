@@ -162,11 +162,13 @@ const FocusTimer = ({ planId, onClose }) => {
   return (
     <div style={{
       position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+      display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+      padding: '16px'
     }}>
       <div style={{
         background: 'var(--bg-primary)', border: '1px solid var(--border-color)',
-        borderRadius: '20px', padding: '36px', width: '320px', textAlign: 'center',
+        borderRadius: '20px', padding: 'clamp(20px, 4vw, 36px)', width: 'min(340px, 92vw)',
+        maxHeight: '90dvh', overflowY: 'auto', textAlign: 'center',
         boxShadow: '0 0 60px rgba(139,92,246,0.2)'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
