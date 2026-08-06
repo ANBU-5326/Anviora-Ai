@@ -1,5 +1,12 @@
-// API Client with Fetch Wrapper (Axios-like interface) and Simulated Helpers
-export const BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "");
+const getInitialBaseUrl = () => {
+  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+  if (typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+    return "https://anviora-ai-backend.onrender.com";
+  }
+  return "http://localhost:8000";
+};
+
+export const BASE_URL = getInitialBaseUrl().replace(/\/$/, "");
 
 const request = async (url, options = {}) => {
   const token = localStorage.getItem("anviora_token");
