@@ -3,9 +3,17 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from app.config.settings import settings
 
+import os
+
 db_url = settings.DATABASE_URL
 if db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
+
+# If running on Render cloud environment and DATABASE_URL points to unreachable localhost, fallback to SQLite
+if (os.getenv("RENDER") or os.getenv("RENDER_SERVICE_ID")) and ("localhost" in db_url or "127.0.0.1" in db_url):
+    db_url = "sqlite:///./anviora.db"
+
+is_postgres = db_url.startswith("postgresql")
 
 # SQLite needs connect_args for threading; PostgreSQL does not
 connect_args = {}
@@ -39,7 +47,6 @@ def create_all_tables():
     Base.metadata.create_all(bind=engine)
 
     from sqlalchemy import text
-    is_postgres = settings.DATABASE_URL.startswith("postgresql")
 
     def add_column_if_missing(conn, table, col_name, col_type):
         if is_postgres:
