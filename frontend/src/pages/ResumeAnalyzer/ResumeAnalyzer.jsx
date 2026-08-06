@@ -372,7 +372,7 @@ const KeywordsTab = ({ r }) => {
       const reply = await callAI(message, systemPrompt);
       setJdResult({ aiResponse: reply });
     } catch (e) {
-      setJdError('Failed to reach AI server. Make sure the backend is running on http://localhost:8000.');
+      setJdError('Failed to reach AI server. Make sure the backend service is online.');
     }
     setJdLoading(false);
   };
@@ -477,7 +477,7 @@ const AIImproveTab = ({ r }) => {
       const reply = await callAI(message, systemPrompt);
       setAiPlan(reply);
     } catch (e) {
-      setAiPlanError('Failed to reach AI server. Make sure the backend is running on http://localhost:8000.');
+      setAiPlanError('Failed to reach AI server. Make sure the backend service is online.');
     }
     setAiPlanLoading(false);
   };

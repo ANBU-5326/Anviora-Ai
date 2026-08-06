@@ -1,5 +1,5 @@
 // API Client with Fetch Wrapper (Axios-like interface) and Simulated Helpers
-const BASE_URL = "http://localhost:8000";
+export const BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "");
 
 const request = async (url, options = {}) => {
   const token = localStorage.getItem("anviora_token");
@@ -24,7 +24,7 @@ const request = async (url, options = {}) => {
     });
   } catch (networkError) {
     // fetch() throws TypeError on network failure / CORS block
-    throw new Error(`Cannot reach backend at ${BASE_URL}. Make sure FastAPI is running on port 8000.`);
+    throw new Error(`Cannot reach backend at ${BASE_URL}. Make sure FastAPI is online.`);
   }
   
   if (!response.ok) {

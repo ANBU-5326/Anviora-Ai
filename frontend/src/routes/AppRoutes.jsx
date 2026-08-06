@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { BASE_URL } from '../services/api';
 
 import Landing from '../pages/Landing/Landing';
 import Login from '../pages/Login/Login';
@@ -39,7 +40,7 @@ const ConnectionErrorScreen = () => (
     <div style={{ maxWidth: 420, width: '100%', backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #bae6fd', boxShadow: '0 10px 30px rgba(14,165,233,0.08)', padding: '40px 32px', textAlign: 'center' }}>
       <h2 style={{ fontSize: '1.4rem', fontWeight: 700, margin: '0 0 12px 0', color: '#0f172a' }}>Server Connection Failed</h2>
       <p style={{ fontSize: '0.9rem', color: '#475569', lineHeight: 1.6, margin: '0 0 28px 0' }}>
-        Could not connect to the Anviora AI backend. Make sure FastAPI is running at <code style={{ color: '#0284c7', backgroundColor: '#e0f2fe', padding: '2px 6px', borderRadius: 4 }}>127.0.0.1:8000</code>.
+        Could not connect to the Anviora AI backend. Make sure FastAPI server is running at <code style={{ color: '#0284c7', backgroundColor: '#e0f2fe', padding: '2px 6px', borderRadius: 4 }}>{BASE_URL}</code>.
       </p>
       <button onClick={() => window.location.reload()} style={{ width: '100%', backgroundColor: '#0ea5e9', color: '#fff', border: 'none', borderRadius: 8, padding: '12px 20px', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', transition: 'background-color 0.2s' }}>
         Retry Connection

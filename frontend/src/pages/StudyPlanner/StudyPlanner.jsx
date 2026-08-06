@@ -256,7 +256,7 @@ const AIPlanModal = ({ onClose, onGenerate }) => {
       }
     } catch (e) {
       console.error('Failed to generate AI study plan', e);
-      setError('Failed to reach AI server or parse the study plan. Please ensure the backend is running on http://localhost:8000.');
+      setError('Failed to reach AI server or parse the study plan. Please ensure the backend service is running and online.');
       setGenerating(false);
       return;
     }

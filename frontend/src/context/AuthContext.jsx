@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { authService } from '../services/authService';
 import { userService } from '../services/userService';
+import { BASE_URL } from '../services/api';
 
 const AuthContext = createContext();
 
@@ -50,7 +51,7 @@ export const AuthProvider = ({ children }) => {
           try {
             const controller = new AbortController();
             const signalTimer = setTimeout(() => controller.abort(), 1500);
-            const res = await fetch('http://127.0.0.1:8000/', { signal: controller.signal });
+            const res = await fetch(`${BASE_URL}/`, { signal: controller.signal });
             clearTimeout(signalTimer);
             if (mounted) setConnectionError(!res.ok);
           } catch (err) {
