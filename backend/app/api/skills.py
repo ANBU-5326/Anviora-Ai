@@ -287,15 +287,15 @@ def get_360_profile(
 
     # Radar chart breakdown
     category_scores = [
-        {"subject": "Programming", "A": int(profile.programming_score), "fullMark": 100},
-        {"subject": "AI Knowledge", "A": int(profile.ai_score), "fullMark": 100},
-        {"subject": "Database", "A": int(profile.database_score), "fullMark": 100},
-        {"subject": "Mathematics", "A": int(profile.math_score), "fullMark": 100},
-        {"subject": "Projects", "A": int(profile.projects_score), "fullMark": 100},
-        {"subject": "Resume ATS", "A": int(profile.resume_score), "fullMark": 100},
-        {"subject": "GitHub Activity", "A": int(profile.github_score), "fullMark": 100},
-        {"subject": "Communication", "A": int(profile.communication_score), "fullMark": 100},
-        {"subject": "Soft Skills", "A": int(profile.softskills_score), "fullMark": 100},
+        {"subject": "Programming", "A": int(profile.programming_score or 50), "fullMark": 100},
+        {"subject": "AI Knowledge", "A": int(profile.ai_score or 40), "fullMark": 100},
+        {"subject": "Database", "A": int(profile.database_score or 45), "fullMark": 100},
+        {"subject": "Mathematics", "A": int(profile.math_score or 40), "fullMark": 100},
+        {"subject": "Projects", "A": int(profile.projects_score or 50), "fullMark": 100},
+        {"subject": "Resume ATS", "A": int(profile.resume_score or 45), "fullMark": 100},
+        {"subject": "GitHub Activity", "A": int(profile.github_score or 40), "fullMark": 100},
+        {"subject": "Communication", "A": int(profile.communication_score or 50), "fullMark": 100},
+        {"subject": "Soft Skills", "A": int(profile.softskills_score or 55), "fullMark": 100},
     ]
 
     # Gaps & Roadmap
@@ -318,7 +318,7 @@ def get_360_profile(
     history = db.query(SkillProgressHistory).filter(SkillProgressHistory.user_id == current_user.id).order_by(SkillProgressHistory.recorded_at.asc()).all()
 
     return {
-        "overall_score": profile.overall_score,
+        "overall_score": profile.overall_score if profile.overall_score is not None else 48.0,
         "target_career": target_career,
         "category_scores": category_scores,
         "skill_gaps": gaps,
@@ -327,7 +327,7 @@ def get_360_profile(
             {
                 "skill_name": h.skill_name,
                 "recorded_score": h.recorded_score,
-                "recorded_at": h.recorded_at.strftime("%b %d")
+                "recorded_at": h.recorded_at.strftime("%b %d") if h.recorded_at else "N/A"
             }
             for h in history
         ]

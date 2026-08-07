@@ -157,24 +157,26 @@ export default function SkillAnalyzer() {
   };
 
   // Open Category Assessment Modal with Controlled Initial Defaults
-  const openCategoryModal = (cat) => {
-    setActiveTestCategory(cat);
+  const openCategoryModal = (cat, label = null) => {
+    const categoryKey = typeof cat === 'string' ? cat : (cat?.cat || 'programming');
+    const categoryLabel = label || (typeof cat === 'string' ? cat : (cat?.label || cat));
+    setActiveTestCategory({ cat: categoryKey, label: categoryLabel });
     setTestResult(null);
-    if (cat === 'programming') {
+    if (categoryKey === 'programming') {
       setTestFormInput({
         mcq_score: 16,
         code: "def binary_search(arr, target):\n    low, high = 0, len(arr) - 1\n    while low <= high:\n        mid = (low + high) // 2\n        if arr[mid] == target: return mid\n        elif arr[mid] < target: low = mid + 1\n        else: high = mid - 1\n    return -1"
       });
-    } else if (cat === 'projects') {
+    } else if (categoryKey === 'projects') {
       setTestFormInput({
         repo_url: "https://github.com/user/ai-platform",
         tech_stack: "React, FastAPI, PyTorch, Docker"
       });
-    } else if (cat === 'communication') {
+    } else if (categoryKey === 'communication') {
       setTestFormInput({
         transcript: "I am a software engineer with expertise in building full stack applications and fine-tuning machine learning models for production."
       });
-    } else if (cat === 'softskills') {
+    } else if (categoryKey === 'softskills') {
       setTestFormInput({
         answers: ["When a teammate misses a deadline, I first check in to understand any blockers, offer technical assistance, and re-align our sprint milestones."]
       });
@@ -219,8 +221,9 @@ export default function SkillAnalyzer() {
     if (!activeTestCategory) return;
     try {
       setTestSubmitting(true);
+      const categoryKey = typeof activeTestCategory === 'object' ? activeTestCategory.cat : activeTestCategory;
       const payload = {
-        category: activeTestCategory,
+        category: categoryKey,
         ...testFormInput
       };
       const res = await skillService.assessCategory360(payload);
@@ -236,8 +239,7 @@ export default function SkillAnalyzer() {
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh', flexDirection: 'column', gap: 16 }}>
-        <LoadingSpinner size="lg" />
-        <span style={{ color: 'var(--text-secondary, #475569)', fontSize: '0.95rem', fontWeight: 600 }}>Loading 360° Career & Skill Engine...</span>
+        <LoadingSpinner variant="google-spinner" size="lg" text="Loading 360° Career & Skill Engine..." />
       </div>
     );
   }
@@ -248,7 +250,10 @@ export default function SkillAnalyzer() {
   const skillGaps = profile360?.skill_gaps || [];
   const roadmap = profile360?.learning_roadmap || [];
   const progressHistory = profile360?.progress_history || [];
-  const targetTitle = profile360?.target_career?.title || (careersList.find(c => c.id === selectedCareerId)?.title) || 'AI Engineer';
+  const activeCareer = (careersList && careersList.length > 0)
+    ? (careersList.find(c => c.id == selectedCareerId) || careersList[0])
+    : FALLBACK_CAREERS[0];
+  const targetTitle = profile360?.target_career?.title || activeCareer?.title || 'AI Engineer';
 
   return (
     <div style={{ padding: '24px 32px', minHeight: '90vh', background: 'var(--bg-primary, #f8fafc)', color: 'var(--text-primary, #0f172a)', fontFamily: "'Inter', sans-serif" }}>
@@ -294,14 +299,14 @@ export default function SkillAnalyzer() {
           </button>
 
           {/* Career Target Picker */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#ffffff', padding: '8px 16px', borderRadius: 12, border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'var(--bg-secondary, #ffffff)', padding: '8px 16px', borderRadius: 12, border: '1px solid var(--border-color, #e2e8f0)', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
             <Target size={18} style={{ color: '#7C3AED' }} />
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Target Career Benchmark</span>
+              <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary, #64748b)', fontWeight: 600, textTransform: 'uppercase' }}>Target Career Benchmark</span>
               <select
                 value={selectedCareerId}
                 onChange={handleCareerChange}
-                style={{ background: 'transparent', border: 'none', fontWeight: 700, fontSize: '0.9rem', color: '#0f172a', cursor: 'pointer', outline: 'none' }}
+                style={{ background: 'transparent', border: 'none', fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary, #0f172a)', cursor: 'pointer', outline: 'none' }}
               >
                 {careersList.map(c => (
                   <option key={c.id} value={c.id}>{c.title} ({c.category})</option>
@@ -314,27 +319,27 @@ export default function SkillAnalyzer() {
 
       {/* Top 3 Stats Overview Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginBottom: 24 }}>
-        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 14, padding: 20, display: 'flex', alignItems: 'center', gap: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+        <div style={{ background: 'var(--bg-secondary, #ffffff)', border: '1px solid var(--border-color, #e2e8f0)', borderRadius: 14, padding: 20, display: 'flex', alignItems: 'center', gap: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
           <div style={{ width: 48, height: 48, borderRadius: 12, background: 'rgba(124,58,237,0.08)', color: '#7C3AED', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Brain size={24} />
           </div>
           <div>
             <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#7C3AED' }}>{profile360?.overall_score ?? 48} / 100</div>
-            <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Overall 360° Readiness</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary, #64748b)', fontWeight: 600 }}>Overall 360° Readiness</div>
           </div>
         </div>
 
-        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 14, padding: 20, display: 'flex', alignItems: 'center', gap: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+        <div style={{ background: 'var(--bg-secondary, #ffffff)', border: '1px solid var(--border-color, #e2e8f0)', borderRadius: 14, padding: 20, display: 'flex', alignItems: 'center', gap: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
           <div style={{ width: 48, height: 48, borderRadius: 12, background: 'rgba(239,68,68,0.08)', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <AlertTriangle size={24} />
           </div>
           <div>
             <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#ef4444' }}>{skillGaps.length}</div>
-            <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Detected Skill Gaps</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary, #64748b)', fontWeight: 600 }}>Detected Skill Gaps</div>
           </div>
         </div>
 
-        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 14, padding: 20, display: 'flex', alignItems: 'center', gap: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+        <div style={{ background: 'var(--bg-secondary, #ffffff)', border: '1px solid var(--border-color, #e2e8f0)', borderRadius: 14, padding: 20, display: 'flex', alignItems: 'center', gap: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
           <div style={{ width: 48, height: 48, borderRadius: 12, background: 'rgba(16,185,129,0.08)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Rocket size={24} />
           </div>
@@ -342,7 +347,7 @@ export default function SkillAnalyzer() {
             <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#10b981' }}>
               {roadmap.filter(r => r.is_completed).length} / {roadmap.length}
             </div>
-            <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Roadmap Tasks Completed</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary, #64748b)', fontWeight: 600 }}>Roadmap Tasks Completed</div>
           </div>
         </div>
       </div>
@@ -351,18 +356,18 @@ export default function SkillAnalyzer() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24, marginBottom: 28 }}>
         
         {/* Radar Chart */}
-        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+        <div style={{ background: 'var(--bg-secondary, #ffffff)', border: '1px solid var(--border-color, #e2e8f0)', borderRadius: 16, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: '#0f172a' }}>360° Skill Capability Radar</h3>
+            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: 'var(--text-primary, #0f172a)' }}>360° Skill Capability Radar</h3>
             <span style={{ fontSize: '0.75rem', background: 'rgba(124,58,237,0.08)', color: '#7C3AED', padding: '4px 10px', borderRadius: 40, fontWeight: 700 }}>
               Benchmarked vs {targetTitle}
             </span>
           </div>
-          <div style={{ height: 320 }}>
-            <ResponsiveContainer width="100%" height="100%">
+          <div style={{ height: 320, width: '100%', minWidth: 0 }}>
+            <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={200}>
               <RadarChart data={radarData}>
-                <PolarGrid stroke="#e2e8f0" />
-                <PolarAngleAxis dataKey="subject" tick={{ fill: '#475569', fontSize: 11, fontWeight: 600 }} />
+                <PolarGrid stroke="var(--border-color, #e2e8f0)" />
+                <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--text-secondary, #475569)', fontSize: 11, fontWeight: 600 }} />
                 <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: '#94a3b8', fontSize: 10 }} />
                 <Radar name="Student Capability" dataKey="A" stroke="#7C3AED" fill="#7C3AED" fillOpacity={0.4} />
               </RadarChart>
@@ -371,26 +376,26 @@ export default function SkillAnalyzer() {
         </div>
 
         {/* Multi-Category Assessment Test Launchpad (Dynamic based on selected Target Career) */}
-        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ background: 'var(--bg-secondary, #ffffff)', border: '1px solid var(--border-color, #e2e8f0)', borderRadius: 16, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: '#0f172a' }}>Assessment Modules for {activeCareer?.title || 'Selected Benchmark'}</h3>
+            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: 'var(--text-primary, #0f172a)' }}>Assessment Modules for {activeCareer?.title || 'Selected Benchmark'}</h3>
             <span style={{ fontSize: '0.72rem', background: 'rgba(124,58,237,0.08)', color: '#7C3AED', padding: '3px 8px', borderRadius: 20, fontWeight: 700 }}>
               Adapted for {activeCareer?.title || 'Target'}
             </span>
           </div>
-          <p style={{ fontSize: '0.8rem', color: '#64748b', margin: '0 0 16px 0' }}>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary, #64748b)', margin: '0 0 16px 0' }}>
             Select a benchmark category below to test your skills tailored specifically for <strong>{activeCareer?.title}</strong>:
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 14, flex: 1, alignContent: 'start' }}>
             {(CAREER_MODULES_MAP[activeCareer?.title] || CAREER_MODULES_MAP['AI Engineer']).map(m => {
-              const IconComp = m.icon;
+              const IconComp = m.icon || Code2;
               return (
                 <button
                   key={m.label}
                   onClick={() => openCategoryModal(m.cat, m.label)}
                   style={{
-                    display: 'flex', alignItems: 'center', gap: 12, background: '#f8fafc', border: '1px solid #e2e8f0',
+                    display: 'flex', alignItems: 'center', gap: 12, background: 'var(--bg-tertiary, #f8fafc)', border: '1px solid var(--border-color, #e2e8f0)',
                     borderRadius: 12, padding: '14px 16px', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s ease',
                     minWidth: 0, minHeight: 68, boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
                   }}
@@ -400,7 +405,7 @@ export default function SkillAnalyzer() {
                     e.currentTarget.style.boxShadow = `0 4px 12px ${m.color}20`;
                   }}
                   onMouseLeave={e => {
-                    e.currentTarget.style.borderColor = '#e2e8f0';
+                    e.currentTarget.style.borderColor = 'var(--border-color, #e2e8f0)';
                     e.currentTarget.style.transform = 'none';
                     e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.03)';
                   }}
@@ -409,8 +414,8 @@ export default function SkillAnalyzer() {
                     <IconComp size={20} />
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, justifyContent: 'center' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0f172a', lineHeight: 1.25, wordBreak: 'normal', whiteSpace: 'normal' }}>{m.label}</span>
-                    <span style={{ fontSize: '0.72rem', color: '#64748b', marginTop: 2, fontWeight: 600 }}>Start Test →</span>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary, #0f172a)', lineHeight: 1.25, wordBreak: 'normal', whiteSpace: 'normal' }}>{m.label}</span>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary, #64748b)', marginTop: 2, fontWeight: 600 }}>Start Test →</span>
                   </div>
                 </button>
               );
@@ -420,25 +425,25 @@ export default function SkillAnalyzer() {
       </div>
 
       {/* Real-time Growth Area Chart */}
-      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 24, marginBottom: 28, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+      <div style={{ background: 'var(--bg-secondary, #ffffff)', border: '1px solid var(--border-color, #e2e8f0)', borderRadius: 16, padding: 24, marginBottom: 28, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: 'var(--text-primary, #0f172a)', display: 'flex', alignItems: 'center', gap: 8 }}>
             <TrendingUp size={18} style={{ color: '#10b981' }} /> Real-Time Skill Readiness Growth & History
           </h3>
           <span style={{ fontSize: '0.75rem', background: 'rgba(16,185,129,0.08)', color: '#10b981', padding: '4px 10px', borderRadius: 40, fontWeight: 700 }}>
             Live AI Tracked
           </span>
         </div>
-        <div style={{ height: 200 }}>
-          <ResponsiveContainer width="100%" height="100%">
+        <div style={{ height: 200, width: '100%', minWidth: 0 }}>
+          <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={150}>
             <AreaChart data={progressHistory.length > 0 ? progressHistory : [
               { recorded_at: 'Initial', recorded_score: 40 },
               { recorded_at: 'Assessment', recorded_score: profile360?.overall_score ?? 48 },
               { recorded_at: 'Current Live', recorded_score: profile360?.overall_score ?? 48 }
             ]}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis dataKey="recorded_at" tick={{ fill: '#64748b', fontSize: 11 }} />
-              <YAxis domain={[0, 100]} tick={{ fill: '#64748b', fontSize: 11 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color, #f1f5f9)" />
+              <XAxis dataKey="recorded_at" tick={{ fill: 'var(--text-secondary, #64748b)', fontSize: 11 }} />
+              <YAxis domain={[0, 100]} tick={{ fill: 'var(--text-secondary, #64748b)', fontSize: 11 }} />
               <Tooltip />
               <Area type="monotone" dataKey="recorded_score" stroke="#10b981" fill="rgba(16,185,129,0.15)" strokeWidth={3} />
             </AreaChart>
@@ -450,9 +455,9 @@ export default function SkillAnalyzer() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24 }}>
         
         {/* Detected Gaps */}
-        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: '0 0 16px 0', color: '#0f172a', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <AlertCircle size={18} style={{ color: '#ef4444' }} /> Skill Gap Analysis ({profile360?.target_career?.title})
+        <div style={{ background: 'var(--bg-secondary, #ffffff)', border: '1px solid var(--border-color, #e2e8f0)', borderRadius: 16, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+          <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: '0 0 16px 0', color: 'var(--text-primary, #0f172a)', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <AlertCircle size={18} style={{ color: '#ef4444' }} /> Skill Gap Analysis ({targetTitle})
           </h3>
           
           {skillGaps.length === 0 ? (
@@ -463,13 +468,13 @@ export default function SkillAnalyzer() {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14, maxHeight: 320, overflowY: 'auto' }}>
               {skillGaps.map(g => (
-                <div key={g.skill_name} style={{ background: '#f8fafc', padding: 14, borderRadius: 10, border: '1px solid #e2e8f0' }}>
+                <div key={g.skill_name} style={{ background: 'var(--bg-tertiary, #f8fafc)', padding: 14, borderRadius: 10, border: '1px solid var(--border-color, #e2e8f0)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 700, marginBottom: 6 }}>
-                    <span style={{ color: '#0f172a' }}>{g.skill_name}</span>
+                    <span style={{ color: 'var(--text-primary, #0f172a)' }}>{g.skill_name}</span>
                     <span style={{ color: '#ef4444' }}>Gap: -{g.gap} points (Actual: {g.actual_level} / Required: {g.required_level})</span>
                   </div>
-                  <div style={{ width: '100%', height: 6, background: '#e2e8f0', borderRadius: 10, overflow: 'hidden' }}>
-                    <div style={{ width: `${(g.actual_level / g.required_level) * 100}%`, height: '100%', background: '#7C3AED', borderRadius: 10 }} />
+                  <div style={{ width: '100%', height: 6, background: 'var(--border-color, #e2e8f0)', borderRadius: 10, overflow: 'hidden' }}>
+                    <div style={{ width: `${Math.min(100, Math.max(0, (g.actual_level / g.required_level) * 100))}%`, height: '100%', background: '#7C3AED', borderRadius: 10 }} />
                   </div>
                 </div>
               ))}
@@ -478,14 +483,14 @@ export default function SkillAnalyzer() {
         </div>
 
         {/* Actionable Learning Roadmap */}
-        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: '0 0 16px 0', color: '#0f172a', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ background: 'var(--bg-secondary, #ffffff)', border: '1px solid var(--border-color, #e2e8f0)', borderRadius: 16, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+          <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: '0 0 16px 0', color: 'var(--text-primary, #0f172a)', display: 'flex', alignItems: 'center', gap: 8 }}>
             <Rocket size={18} style={{ color: '#7C3AED' }} /> Personalized AI Learning Roadmap
           </h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 320, overflowY: 'auto' }}>
             {roadmap.map(item => (
-              <div key={item.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: item.is_completed ? 'rgba(16,185,129,0.06)' : '#f8fafc', padding: '12px 16px', borderRadius: 10, border: item.is_completed ? '1px solid #10b981' : '1px solid #e2e8f0' }}>
+              <div key={item.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: item.is_completed ? 'rgba(16,185,129,0.06)' : 'var(--bg-tertiary, #f8fafc)', padding: '12px 16px', borderRadius: 10, border: item.is_completed ? '1px solid #10b981' : '1px solid var(--border-color, #e2e8f0)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <button
                     onClick={() => !item.is_completed && handleTaskComplete(item.id)}
@@ -495,8 +500,8 @@ export default function SkillAnalyzer() {
                     {item.is_completed ? <CheckCircle2 size={20} /> : <div style={{ width: 18, height: 18, borderRadius: '50%', border: '2px solid #cbd5e1' }} />}
                   </button>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: item.is_completed ? '#059669' : '#0f172a', textDecoration: item.is_completed ? 'line-through' : 'none' }}>{item.action_title}</span>
-                    <span style={{ fontSize: '0.7rem', color: '#64748b' }}>Skill: {item.skill_name} • Est. Time: {item.estimated_hours}h</span>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: item.is_completed ? '#059669' : 'var(--text-primary, #0f172a)', textDecoration: item.is_completed ? 'line-through' : 'none' }}>{item.action_title}</span>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary, #64748b)' }}>Skill: {item.skill_name} • Est. Time: {item.estimated_hours}h</span>
                   </div>
                 </div>
 
@@ -517,7 +522,7 @@ export default function SkillAnalyzer() {
           <div style={{ background: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', width: '90%', maxWidth: 540, padding: 24, boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
               <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, textTransform: 'capitalize', color: '#0f172a' }}>
-                {activeTestCategory} Assessment Test
+                {(typeof activeTestCategory === 'object' ? activeTestCategory.label : activeTestCategory)} Assessment Test
               </h3>
               <button onClick={() => setActiveTestCategory(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
                 <X size={20} />
@@ -541,7 +546,7 @@ export default function SkillAnalyzer() {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                {activeTestCategory === 'programming' && (
+                {((typeof activeTestCategory === 'object' ? activeTestCategory.cat : activeTestCategory) === 'programming' || (typeof activeTestCategory === 'object' ? activeTestCategory.cat : activeTestCategory) === 'python') && (
                   <>
                     <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a' }}>MCQ Correct Answers (out of 20):</label>
                     <input type="number" max="20" min="0" value={testFormInput.mcq_score ?? 16} onChange={e => setTestFormInput({ ...testFormInput, mcq_score: parseInt(e.target.value) || 0 })} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
@@ -550,7 +555,7 @@ export default function SkillAnalyzer() {
                   </>
                 )}
 
-                {activeTestCategory === 'projects' && (
+                {(typeof activeTestCategory === 'object' ? activeTestCategory.cat : activeTestCategory) === 'projects' && (
                   <>
                     <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a' }}>GitHub Repository URL:</label>
                     <input type="text" value={testFormInput.repo_url ?? ''} onChange={e => setTestFormInput({ ...testFormInput, repo_url: e.target.value })} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
@@ -559,24 +564,31 @@ export default function SkillAnalyzer() {
                   </>
                 )}
 
-                {activeTestCategory === 'communication' && (
+                {(typeof activeTestCategory === 'object' ? activeTestCategory.cat : activeTestCategory) === 'communication' && (
                   <>
                     <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a' }}>Spoken Response Transcript:</label>
                     <textarea rows="4" value={testFormInput.transcript ?? ''} onChange={e => setTestFormInput({ ...testFormInput, transcript: e.target.value })} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
                   </>
                 )}
 
-                {(activeTestCategory === 'ai' || activeTestCategory === 'database' || activeTestCategory === 'mathematics') && (
+                {['ai', 'database', 'mathematics'].includes(typeof activeTestCategory === 'object' ? activeTestCategory.cat : activeTestCategory) && (
                   <>
                     <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a' }}>Category MCQ Score (out of 10):</label>
                     <input type="number" max="10" min="0" value={testFormInput.mcq_score ?? 8} onChange={e => setTestFormInput({ ...testFormInput, mcq_score: parseInt(e.target.value) || 0 })} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
                   </>
                 )}
 
-                {activeTestCategory === 'softskills' && (
+                {(typeof activeTestCategory === 'object' ? activeTestCategory.cat : activeTestCategory) === 'softskills' && (
                   <>
                     <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a' }}>Situational Judgment Scenario Response:</label>
                     <textarea rows="4" value={testFormInput.answers?.[0] ?? ''} onChange={e => setTestFormInput({ ...testFormInput, answers: [e.target.value] })} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
+                  </>
+                )}
+
+                {!['programming', 'python', 'projects', 'communication', 'ai', 'database', 'mathematics', 'softskills'].includes(typeof activeTestCategory === 'object' ? activeTestCategory.cat : activeTestCategory) && (
+                  <>
+                    <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a' }}>Assessment Score / Rating (out of 10):</label>
+                    <input type="number" max="10" min="0" value={testFormInput.mcq_score ?? 8} onChange={e => setTestFormInput({ ...testFormInput, mcq_score: parseInt(e.target.value) || 0 })} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
                   </>
                 )}
 
