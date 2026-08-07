@@ -382,7 +382,7 @@ export default function SkillAnalyzer() {
             Select a benchmark category below to test your skills tailored specifically for <strong>{activeCareer?.title}</strong>:
           </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12, flex: 1, alignContent: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: 12, flex: 1, alignContent: 'start' }}>
             {(CAREER_MODULES_MAP[activeCareer?.title] || CAREER_MODULES_MAP['AI Engineer']).map(m => {
               const IconComp = m.icon;
               return (
@@ -401,8 +401,8 @@ export default function SkillAnalyzer() {
                     <IconComp size={20} />
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
-                    <span style={{ fontSize: '0.83rem', fontWeight: 700, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.label}</span>
-                    <span style={{ fontSize: '0.72rem', color: '#64748b', whiteSpace: 'nowrap' }}>Start Test →</span>
+                    <span style={{ fontSize: '0.83rem', fontWeight: 700, color: '#0f172a', lineHeight: 1.25, whiteSpace: 'normal', wordBreak: 'break-word' }}>{m.label}</span>
+                    <span style={{ fontSize: '0.72rem', color: '#64748b', marginTop: 2 }}>Start Test →</span>
                   </div>
                 </button>
               );
