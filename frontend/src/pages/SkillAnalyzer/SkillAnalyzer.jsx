@@ -10,14 +10,35 @@ import {
 import { skillService } from '../../services/skillService';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
+const FALLBACK_CAREERS = [
+  { id: 1, title: 'AI Engineer', category: 'Artificial Intelligence' },
+  { id: 2, title: 'Full Stack Developer', category: 'Software Engineering' },
+  { id: 3, title: 'Cyber Security Analyst', category: 'Cybersecurity' },
+  { id: 4, title: 'Data Scientist', category: 'Data & Analytics' },
+  { id: 5, title: 'DevOps & Cloud Engineer', category: 'Cloud & Operations' }
+];
+
+const DEFAULT_CATEGORY_SCORES = [
+  { subject: 'Programming', A: 50, fullMark: 100 },
+  { subject: 'AI Knowledge', A: 40, fullMark: 100 },
+  { subject: 'Database', A: 45, fullMark: 100 },
+  { subject: 'Mathematics', A: 40, fullMark: 100 },
+  { subject: 'Projects', A: 50, fullMark: 100 },
+  { subject: 'Resume ATS', A: 45, fullMark: 100 },
+  { subject: 'GitHub Activity', A: 40, fullMark: 100 },
+  { subject: 'Communication', A: 50, fullMark: 100 },
+  { subject: 'Soft Skills', A: 55, fullMark: 100 },
+];
+
 export default function SkillAnalyzer() {
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState(null);
   const [activeView, setActiveView] = useState('dashboard'); // 'dashboard' | 'assessment'
 
   // 360 Profile Data
   const [profile360, setProfile360] = useState(null);
-  const [careersList, setCareersList] = useState([]);
-  const [selectedCareerId, setSelectedCareerId] = useState('');
+  const [careersList, setCareersList] = useState(FALLBACK_CAREERS);
+  const [selectedCareerId, setSelectedCareerId] = useState(1);
 
   // Category Assessment Test Modal
   const [activeTestCategory, setActiveTestCategory] = useState(null);
@@ -29,12 +50,33 @@ export default function SkillAnalyzer() {
   const load360Data = useCallback(async (showLoading = true) => {
     try {
       if (showLoading) setLoading(true);
-      const [profData, carData] = await Promise.all([
+      setErrorMessage(null);
+
+      const [profResult, carResult] = await Promise.allSettled([
         skillService.fetch360Profile(),
         skillService.fetchTargetCareers()
       ]);
+
+      let profData = null;
+      let carData = FALLBACK_CAREERS;
+
+      if (carResult.status === 'fulfilled' && Array.isArray(carResult.value) && carResult.value.length > 0) {
+        carData = carResult.value;
+      }
+
+      if (profResult.status === 'fulfilled' && profResult.value) {
+        profData = profResult.value;
+      } else if (profResult.reason) {
+        console.warn('Notice loading 360 profile:', profResult.reason);
+        const detail = profResult.reason?.message || 'Cloud sync unavailable. Displaying local skill profile.';
+        if (!detail.includes('401') && !detail.includes('expired')) {
+          setErrorMessage(detail);
+        }
+      }
+
       setProfile360(profData);
       setCareersList(carData);
+
       if (profData?.target_career?.id) {
         setSelectedCareerId(profData.target_career.id);
       } else if (carData.length > 0) {
@@ -42,6 +84,8 @@ export default function SkillAnalyzer() {
       }
     } catch (e) {
       console.error('Error loading 360 skill profile:', e);
+      setCareersList(FALLBACK_CAREERS);
+      setErrorMessage('Backend connection error. Please verify server status.');
     } finally {
       if (showLoading) setLoading(false);
     }
@@ -128,14 +172,30 @@ export default function SkillAnalyzer() {
     );
   }
 
-  const radarData = profile360?.category_scores || [];
+  const radarData = (profile360?.category_scores && profile360.category_scores.length > 0)
+    ? profile360.category_scores
+    : DEFAULT_CATEGORY_SCORES;
   const skillGaps = profile360?.skill_gaps || [];
   const roadmap = profile360?.learning_roadmap || [];
   const progressHistory = profile360?.progress_history || [];
+  const targetTitle = profile360?.target_career?.title || (careersList.find(c => c.id === selectedCareerId)?.title) || 'AI Engineer';
 
   return (
     <div style={{ padding: '24px 32px', minHeight: '90vh', background: 'var(--bg-primary, #f8fafc)', color: 'var(--text-primary, #0f172a)', fontFamily: "'Inter', sans-serif" }}>
       
+      {/* Optional Dismissible Sync Warning Banner */}
+      {errorMessage && (
+        <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 12, padding: '12px 20px', marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#991b1b' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <AlertCircle size={18} />
+            <span style={{ fontSize: '0.88rem', fontWeight: 600 }}>{errorMessage}</span>
+          </div>
+          <button onClick={() => load360Data(true)} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 14px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <RefreshCw size={14} /> Retry Sync
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28, flexWrap: 'wrap', gap: 16 }}>
         <div>
@@ -173,7 +233,7 @@ export default function SkillAnalyzer() {
             <Brain size={24} />
           </div>
           <div>
-            <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#7C3AED' }}>{profile360?.overall_score ?? 0} / 100</div>
+            <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#7C3AED' }}>{profile360?.overall_score ?? 48} / 100</div>
             <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Overall 360° Readiness</div>
           </div>
         </div>
@@ -202,14 +262,14 @@ export default function SkillAnalyzer() {
       </div>
 
       {/* Main Grid: Radar Chart & Multi-Category Assessment Launchers */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24, marginBottom: 28 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24, marginBottom: 28 }}>
         
         {/* Radar Chart */}
         <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: '#0f172a' }}>360° Skill Capability Radar</h3>
             <span style={{ fontSize: '0.75rem', background: 'rgba(124,58,237,0.08)', color: '#7C3AED', padding: '4px 10px', borderRadius: 40, fontWeight: 700 }}>
-              Benchmarked vs {profile360?.target_career?.title || 'Target'}
+              Benchmarked vs {targetTitle}
             </span>
           </div>
           <div style={{ height: 320 }}>
@@ -226,10 +286,10 @@ export default function SkillAnalyzer() {
 
         {/* Multi-Category Assessment Test Launchpad */}
         <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column' }}>
-          <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: '0 0 16px 0', color: '#0f172a' }}>Multi-Category Assessment Modules</h3>
-          <p style={{ fontSize: '0.8rem', color: '#64748b', margin: '0 0 20px 0' }}>Select a category below to test your abilities and update your overall 360° Skill Profile:</p>
+          <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: '0 0 8px 0', color: '#0f172a' }}>Multi-Category Assessment Modules</h3>
+          <p style={{ fontSize: '0.8rem', color: '#64748b', margin: '0 0 16px 0' }}>Select a category below to test your abilities and update your overall 360° Skill Profile:</p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 12, overflowY: 'auto', flex: 1 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12, flex: 1, alignContent: 'start' }}>
             {[
               { cat: 'programming', label: 'Programming & Logic', icon: Code2, color: '#7C3AED' },
               { cat: 'ai', label: 'AI & Machine Learning', icon: Brain, color: '#3b82f6' },
@@ -246,17 +306,18 @@ export default function SkillAnalyzer() {
                   onClick={() => openCategoryModal(m.cat)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 12, background: '#f8fafc', border: '1px solid #e2e8f0',
-                    borderRadius: 12, padding: '14px 16px', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s'
+                    borderRadius: 12, padding: '12px 14px', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s',
+                    minWidth: 0
                   }}
                   onMouseEnter={e => e.currentTarget.style.borderColor = m.color}
                   onMouseLeave={e => e.currentTarget.style.borderColor = '#e2e8f0'}
                 >
-                  <div style={{ width: 36, height: 36, borderRadius: 8, background: `${m.color}15`, color: m.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <IconComp size={18} />
+                  <div style={{ width: 38, height: 38, borderRadius: 10, background: `${m.color}15`, color: m.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <IconComp size={20} />
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0f172a' }}>{m.label}</span>
-                    <span style={{ fontSize: '0.7rem', color: '#64748b' }}>Start Assessment →</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.label}</span>
+                    <span style={{ fontSize: '0.72rem', color: '#64748b', whiteSpace: 'nowrap' }}>Start Assessment →</span>
                   </div>
                 </button>
               );

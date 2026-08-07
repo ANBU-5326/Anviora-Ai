@@ -187,9 +187,15 @@ def recalculate_360_scores(db: Session, user_id: int):
 
 def generate_recommendations_and_gaps(db: Session, user_id: int):
     """Detects skill gaps against chosen career benchmark and populates learning roadmap."""
+    seed_careers_if_empty(db)
     profile = get_or_create_user_360_profile(db, user_id)
     if not profile.target_career_id:
-        return [], []
+        default_career = db.query(Career).first()
+        if default_career:
+            profile.target_career_id = default_career.id
+            db.commit()
+        else:
+            return [], []
 
     career = db.query(Career).filter(Career.id == profile.target_career_id).first()
     if not career:
