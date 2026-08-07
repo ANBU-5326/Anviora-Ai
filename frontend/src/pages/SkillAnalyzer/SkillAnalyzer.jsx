@@ -5,10 +5,59 @@ import {
 } from 'recharts';
 import {
   Award, Target, Zap, BookOpen, Code2, Briefcase, TrendingUp,
-  Star, AlertCircle, CheckCircle2, ArrowRight, Brain, Rocket, X, RefreshCw, Check, AlertTriangle, Play, Mic, FileText, GitBranch
+  Star, AlertCircle, CheckCircle2, ArrowRight, Brain, Rocket, X, RefreshCw, Check, AlertTriangle, Play, Mic, FileText, GitBranch,
+  Shield, Terminal, Lock, BarChart3, Cloud, Box
 } from 'lucide-react';
 import { skillService } from '../../services/skillService';
 import LoadingSpinner from '../../components/LoadingSpinner';
+
+const CAREER_MODULES_MAP = {
+  'AI Engineer': [
+    { cat: 'programming', label: 'Python & Algorithm Logic', icon: Code2, color: '#7C3AED' },
+    { cat: 'ai', label: 'Machine Learning & PyTorch', icon: Brain, color: '#3b82f6' },
+    { cat: 'ai', label: 'LLMs & RAG Architectures', icon: Brain, color: '#8b5cf6' },
+    { cat: 'database', label: 'SQL & Data Pipelines', icon: BookOpen, color: '#10b981' },
+    { cat: 'mathematics', label: 'Mathematics & Calculus', icon: TrendingUp, color: '#d97706' },
+    { cat: 'projects', label: 'AI Portfolio & GitHub', icon: GitBranch, color: '#ec4899' },
+    { cat: 'softskills', label: 'Leadership & Soft Skills', icon: Zap, color: '#06b6d4' }
+  ],
+  'Full Stack Developer': [
+    { cat: 'programming', label: 'JavaScript & TypeScript', icon: Code2, color: '#f59e0b' },
+    { cat: 'programming', label: 'React & UI Architecture', icon: Code2, color: '#3b82f6' },
+    { cat: 'programming', label: 'Node.js / Python Backend', icon: Code2, color: '#10b981' },
+    { cat: 'database', label: 'SQL & NoSQL Databases', icon: BookOpen, color: '#10b981' },
+    { cat: 'projects', label: 'Full Stack Portfolio', icon: GitBranch, color: '#ec4899' },
+    { cat: 'communication', label: 'REST APIs & System Design', icon: Mic, color: '#8b5cf6' },
+    { cat: 'softskills', label: 'Agile & Team Leadership', icon: Zap, color: '#06b6d4' }
+  ],
+  'Cyber Security Analyst': [
+    { cat: 'programming', label: 'Network Security & Firewalls', icon: Shield, color: '#ef4444' },
+    { cat: 'programming', label: 'Ethical Hacking & PenTesting', icon: Terminal, color: '#ef4444' },
+    { cat: 'programming', label: 'Linux Admin & Bash', icon: Code2, color: '#6366f1' },
+    { cat: 'programming', label: 'Cryptography & Audit', icon: Lock, color: '#f59e0b' },
+    { cat: 'database', label: 'SIEM & Log Monitoring', icon: BookOpen, color: '#10b981' },
+    { cat: 'projects', label: 'Security Audit Portfolio', icon: GitBranch, color: '#ec4899' },
+    { cat: 'softskills', label: 'Incident Mgmt & Leadership', icon: Zap, color: '#06b6d4' }
+  ],
+  'Data Scientist': [
+    { cat: 'programming', label: 'Python & Pandas/NumPy', icon: Code2, color: '#7C3AED' },
+    { cat: 'database', label: 'SQL & Data Warehousing', icon: BookOpen, color: '#10b981' },
+    { cat: 'mathematics', label: 'Statistics & Hypothesis', icon: TrendingUp, color: '#d97706' },
+    { cat: 'ai', label: 'Machine Learning Models', icon: Brain, color: '#3b82f6' },
+    { cat: 'projects', label: 'Data Science Portfolio', icon: GitBranch, color: '#ec4899' },
+    { cat: 'communication', label: 'Data Viz & BI Dashboards', icon: BarChart3, color: '#8b5cf6' },
+    { cat: 'softskills', label: 'Business Insights & Soft Skills', icon: Zap, color: '#06b6d4' }
+  ],
+  'DevOps & Cloud Engineer': [
+    { cat: 'projects', label: 'AWS & Cloud Infrastructure', icon: Cloud, color: '#3b82f6' },
+    { cat: 'projects', label: 'Docker & Kubernetes', icon: Box, color: '#06b6d4' },
+    { cat: 'projects', label: 'CI/CD Pipelines & Automation', icon: GitBranch, color: '#10b981' },
+    { cat: 'programming', label: 'Linux Admin & Automation', icon: Terminal, color: '#6366f1' },
+    { cat: 'database', label: 'Terraform & Infrastructure', icon: BookOpen, color: '#7C3AED' },
+    { cat: 'communication', label: 'System Design & Ops', icon: Mic, color: '#8b5cf6' },
+    { cat: 'softskills', label: 'Cloud Ops & Leadership', icon: Zap, color: '#06b6d4' }
+  ]
+};
 
 const FALLBACK_CAREERS = [
   { id: 1, title: 'AI Engineer', category: 'Artificial Intelligence' },
@@ -321,26 +370,25 @@ export default function SkillAnalyzer() {
           </div>
         </div>
 
-        {/* Multi-Category Assessment Test Launchpad */}
+        {/* Multi-Category Assessment Test Launchpad (Dynamic based on selected Target Career) */}
         <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column' }}>
-          <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: '0 0 8px 0', color: '#0f172a' }}>Multi-Category Assessment Modules</h3>
-          <p style={{ fontSize: '0.8rem', color: '#64748b', margin: '0 0 16px 0' }}>Select a category below to test your abilities and update your overall 360° Skill Profile:</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: '#0f172a' }}>Assessment Modules for {activeCareer?.title || 'Selected Benchmark'}</h3>
+            <span style={{ fontSize: '0.72rem', background: 'rgba(124,58,237,0.08)', color: '#7C3AED', padding: '3px 8px', borderRadius: 20, fontWeight: 700 }}>
+              Adapted for {activeCareer?.title || 'Target'}
+            </span>
+          </div>
+          <p style={{ fontSize: '0.8rem', color: '#64748b', margin: '0 0 16px 0' }}>
+            Select a benchmark category below to test your skills tailored specifically for <strong>{activeCareer?.title}</strong>:
+          </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12, flex: 1, alignContent: 'start' }}>
-            {[
-              { cat: 'programming', label: 'Programming & Logic', icon: Code2, color: '#7C3AED' },
-              { cat: 'ai', label: 'AI & Machine Learning', icon: Brain, color: '#3b82f6' },
-              { cat: 'database', label: 'Database & SQL', icon: BookOpen, color: '#10b981' },
-              { cat: 'mathematics', label: 'Mathematics & Stats', icon: TrendingUp, color: '#d97706' },
-              { cat: 'projects', label: 'Portfolio & GitHub', icon: GitBranch, color: '#ec4899' },
-              { cat: 'communication', label: 'Communication & Speech', icon: Mic, color: '#8b5cf6' },
-              { cat: 'softskills', label: 'Soft Skills & Leadership', icon: Zap, color: '#06b6d4' }
-            ].map(m => {
+            {(CAREER_MODULES_MAP[activeCareer?.title] || CAREER_MODULES_MAP['AI Engineer']).map(m => {
               const IconComp = m.icon;
               return (
                 <button
-                  key={m.cat}
-                  onClick={() => openCategoryModal(m.cat)}
+                  key={m.label}
+                  onClick={() => openCategoryModal(m.cat, m.label)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 12, background: '#f8fafc', border: '1px solid #e2e8f0',
                     borderRadius: 12, padding: '12px 14px', textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s',
@@ -353,8 +401,8 @@ export default function SkillAnalyzer() {
                     <IconComp size={20} />
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.label}</span>
-                    <span style={{ fontSize: '0.72rem', color: '#64748b', whiteSpace: 'nowrap' }}>Start Assessment →</span>
+                    <span style={{ fontSize: '0.83rem', fontWeight: 700, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.label}</span>
+                    <span style={{ fontSize: '0.72rem', color: '#64748b', whiteSpace: 'nowrap' }}>Start Test →</span>
                   </div>
                 </button>
               );
