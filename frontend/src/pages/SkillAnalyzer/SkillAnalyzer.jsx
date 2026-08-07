@@ -134,9 +134,30 @@ export default function SkillAnalyzer() {
     }
   };
 
-  // Complete Roadmap Task
+  const [rescanning, setRescanning] = useState(false);
+
+  const handleLiveRescan = async () => {
+    try {
+      setRescanning(true);
+      await skillService.rescan360Profile();
+      await load360Data(false);
+    } catch (err) {
+      console.error('Failed live rescan:', err);
+    } finally {
+      setRescanning(false);
+    }
+  };
+
+  // Optimistic Complete Roadmap Task
   const handleTaskComplete = async (taskId) => {
     try {
+      if (profile360) {
+        setProfile360(prev => ({
+          ...prev,
+          overall_score: Math.min(100, (prev?.overall_score || 50) + 3),
+          learning_roadmap: (prev?.learning_roadmap || []).map(r => r.id === taskId ? { ...r, is_completed: true } : r)
+        }));
+      }
       await skillService.completeRoadmapTask(taskId);
       await load360Data(false);
     } catch (err) {
@@ -144,7 +165,7 @@ export default function SkillAnalyzer() {
     }
   };
 
-  // Submit Category Assessment
+  // Submit Category Assessment with Real-time AI Feedback
   const handleCategorySubmit = async () => {
     if (!activeTestCategory) return;
     try {
@@ -208,20 +229,36 @@ export default function SkillAnalyzer() {
           </h1>
         </div>
 
-        {/* Career Target Picker */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#ffffff', padding: '8px 16px', borderRadius: 12, border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <Target size={18} style={{ color: '#7C3AED' }} />
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Target Career Benchmark</span>
-            <select
-              value={selectedCareerId}
-              onChange={handleCareerChange}
-              style={{ background: 'transparent', border: 'none', fontWeight: 700, fontSize: '0.9rem', color: '#0f172a', cursor: 'pointer', outline: 'none' }}
-            >
-              {careersList.map(c => (
-                <option key={c.id} value={c.id}>{c.title} ({c.category})</option>
-              ))}
-            </select>
+        {/* Action Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <button
+            onClick={handleLiveRescan}
+            disabled={rescanning}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8, background: '#7C3AED', color: '#ffffff',
+              padding: '10px 18px', borderRadius: 12, border: 'none', fontWeight: 700, fontSize: '0.85rem',
+              cursor: rescanning ? 'default' : 'pointer', boxShadow: '0 4px 12px rgba(124,58,237,0.25)', transition: 'all 0.2s'
+            }}
+          >
+            <RefreshCw size={16} style={{ animation: rescanning ? 'spin 1s linear infinite' : 'none' }} />
+            {rescanning ? 'Scanning Real-Time AI...' : 'Real-Time Live AI Rescan'}
+          </button>
+
+          {/* Career Target Picker */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#ffffff', padding: '8px 16px', borderRadius: 12, border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+            <Target size={18} style={{ color: '#7C3AED' }} />
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Target Career Benchmark</span>
+              <select
+                value={selectedCareerId}
+                onChange={handleCareerChange}
+                style={{ background: 'transparent', border: 'none', fontWeight: 700, fontSize: '0.9rem', color: '#0f172a', cursor: 'pointer', outline: 'none' }}
+              >
+                {careersList.map(c => (
+                  <option key={c.id} value={c.id}>{c.title} ({c.category})</option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
       </div>
@@ -323,6 +360,33 @@ export default function SkillAnalyzer() {
               );
             })}
           </div>
+        </div>
+      </div>
+
+      {/* Real-time Growth Area Chart */}
+      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 24, marginBottom: 28, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <TrendingUp size={18} style={{ color: '#10b981' }} /> Real-Time Skill Readiness Growth & History
+          </h3>
+          <span style={{ fontSize: '0.75rem', background: 'rgba(16,185,129,0.08)', color: '#10b981', padding: '4px 10px', borderRadius: 40, fontWeight: 700 }}>
+            Live AI Tracked
+          </span>
+        </div>
+        <div style={{ height: 200 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={progressHistory.length > 0 ? progressHistory : [
+              { recorded_at: 'Initial', recorded_score: 40 },
+              { recorded_at: 'Assessment', recorded_score: profile360?.overall_score ?? 48 },
+              { recorded_at: 'Current Live', recorded_score: profile360?.overall_score ?? 48 }
+            ]}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis dataKey="recorded_at" tick={{ fill: '#64748b', fontSize: 11 }} />
+              <YAxis domain={[0, 100]} tick={{ fill: '#64748b', fontSize: 11 }} />
+              <Tooltip />
+              <Area type="monotone" dataKey="recorded_score" stroke="#10b981" fill="rgba(16,185,129,0.15)" strokeWidth={3} />
+            </AreaChart>
+          </ResponsiveContainer>
         </div>
       </div>
 

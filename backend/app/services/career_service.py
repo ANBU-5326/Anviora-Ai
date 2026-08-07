@@ -3,6 +3,7 @@ import os
 from sqlalchemy.orm import Session
 from datetime import datetime
 import json
+import re
 
 # Ensure project root is in sys.path
 backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -183,6 +184,79 @@ def recalculate_360_scores(db: Session, user_id: int):
     db.commit()
     db.refresh(profile)
     return profile
+
+
+async def sync_user_360_with_ai(db: Session, user_id: int) -> UserSkillProfile360:
+    """Uses Gemini AI to evaluate all user activities & database records and generate real-time 360 profile scores."""
+    profile = get_or_create_user_360_profile(db, user_id)
+    
+    # Fetch user's assessment logs from DB
+    past_logs = db.query(SkillAssessment360).filter(SkillAssessment360.user_id == user_id).order_by(SkillAssessment360.created_at.desc()).limit(15).all()
+    user_obj = db.query(User).filter(User.id == user_id).first()
+    
+    target_career_title = "AI Engineer"
+    if profile.target_career_id:
+        c = db.query(Career).filter(Career.id == profile.target_career_id).first()
+        if c:
+            target_career_title = c.title
+            
+    activity_summary = []
+    if user_obj:
+        activity_summary.append(f"Candidate Name: {user_obj.full_name}, Email: {user_obj.email}")
+    
+    for log in past_logs:
+        activity_summary.append(f"- Category: {log.category}, Score Achieved: {log.score_achieved}")
+
+    prompt = f"""
+You are an AI Talent Evaluator. Evaluate the candidate's 360-degree technical skill readiness for the role: "{target_career_title}".
+
+Candidate Activity Records:
+{chr(10).join(activity_summary) if activity_summary else "No recent test logs. Provide honest baseline estimation."}
+
+Current Scores:
+- Programming: {profile.programming_score}
+- AI Knowledge: {profile.ai_score}
+- Database: {profile.database_score}
+- Mathematics: {profile.math_score}
+- Projects: {profile.projects_score}
+- Resume ATS: {profile.resume_score}
+- GitHub Activity: {profile.github_score}
+- Communication: {profile.communication_score}
+- Soft Skills: {profile.softskills_score}
+
+Return ONLY valid JSON (no markdown formatting, no backticks):
+{{
+  "programming_score": <float 0-100>,
+  "ai_score": <float 0-100>,
+  "database_score": <float 0-100>,
+  "math_score": <float 0-100>,
+  "projects_score": <float 0-100>,
+  "resume_score": <float 0-100>,
+  "github_score": <float 0-100>,
+  "communication_score": <float 0-100>,
+  "softskills_score": <float 0-100>
+}}
+"""
+    system_prompt = "You are an AI skill assessment engine. Return valid JSON ONLY."
+    try:
+        raw_resp = await ask_gemini(prompt=prompt, system_prompt=system_prompt)
+        json_match = re.search(r'\{.*\}', raw_resp, re.DOTALL)
+        if json_match:
+            data = json.loads(json_match.group(0))
+            profile.programming_score = float(data.get("programming_score", profile.programming_score))
+            profile.ai_score = float(data.get("ai_score", profile.ai_score))
+            profile.database_score = float(data.get("database_score", profile.database_score))
+            profile.math_score = float(data.get("math_score", profile.math_score))
+            profile.projects_score = float(data.get("projects_score", profile.projects_score))
+            profile.resume_score = float(data.get("resume_score", profile.resume_score))
+            profile.github_score = float(data.get("github_score", profile.github_score))
+            profile.communication_score = float(data.get("communication_score", profile.communication_score))
+            profile.softskills_score = float(data.get("softskills_score", profile.softskills_score))
+            db.commit()
+    except Exception as e:
+        print(f"[AI Sync Warning] Failed to call Gemini for 360 sync: {e}")
+
+    return recalculate_360_scores(db, user_id)
 
 
 def generate_recommendations_and_gaps(db: Session, user_id: int):

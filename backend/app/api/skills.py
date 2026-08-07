@@ -191,12 +191,14 @@ if project_root not in sys.path:
 
 from app.services.career_service import (
     seed_careers_if_empty, get_or_create_user_360_profile,
-    recalculate_360_scores, generate_recommendations_and_gaps
+    recalculate_360_scores, generate_recommendations_and_gaps,
+    sync_user_360_with_ai
 )
 from app.models.skill import (
     Career, CareerRequiredSkill, UserSkillProfile360,
     SkillAssessment360, SkillLearningRecommendation, SkillProgressHistory
 )
+from ai.llm.gemini_client import ask_gemini
 from ai.skills_ai.evaluator import (
     evaluate_code_quality, evaluate_project_github,
     evaluate_communication_speech, evaluate_soft_skills
@@ -332,6 +334,24 @@ def get_360_profile(
     }
 
 
+@router.post("/360/rescan")
+async def rescan_user_360_profile(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Triggers real-time re-assessment of all user 360 skills using Gemini AI."""
+    seed_careers_if_empty(db)
+    profile = await sync_user_360_with_ai(db, current_user.id)
+    gaps, recs = generate_recommendations_and_gaps(db, current_user.id)
+    return {
+        "status": "success",
+        "message": "360° Profile re-evaluated with Gemini AI in real time",
+        "overall_score": profile.overall_score,
+        "gaps_count": len(gaps),
+        "roadmap_count": len(recs)
+    }
+
+
 @router.post("/360/assess-category")
 async def assess_360_category(
     request_data: dict,
@@ -355,18 +375,54 @@ async def assess_360_category(
         details = code_eval
 
     elif category == "ai":
-        mcq_score = request_data.get("mcq_score", 8) # out of 10
-        calculated_score = round((mcq_score / 10) * 100, 1)
+        mcq_score = request_data.get("mcq_score", 8)
+        raw_score = round((mcq_score / 10) * 100, 1)
+        try:
+            ai_resp = await ask_gemini(
+                f"Evaluate candidate AI & ML knowledge score. MCQ Correct: {mcq_score}/10.",
+                "You are an AI/ML technical interviewer. Return JSON: {\"score\": <0-100>, \"feedback\": \"<concise evaluation>\"}"
+            )
+            m = re.search(r'\{.*\}', ai_resp, re.DOTALL)
+            eval_data = json.loads(m.group(0)) if m else {}
+            calculated_score = float(eval_data.get("score", raw_score))
+            details = eval_data
+        except Exception:
+            calculated_score = raw_score
+            details = {"feedback": "Evaluated based on MCQ score."}
         profile.ai_score = calculated_score
 
     elif category == "database":
-        mcq_score = request_data.get("mcq_score", 8) # out of 10
-        calculated_score = round((mcq_score / 10) * 100, 1)
+        mcq_score = request_data.get("mcq_score", 8)
+        raw_score = round((mcq_score / 10) * 100, 1)
+        try:
+            ai_resp = await ask_gemini(
+                f"Evaluate candidate Database & SQL expertise. MCQ Correct: {mcq_score}/10.",
+                "You are a Senior DBA. Return JSON: {\"score\": <0-100>, \"feedback\": \"<concise database feedback>\"}"
+            )
+            m = re.search(r'\{.*\}', ai_resp, re.DOTALL)
+            eval_data = json.loads(m.group(0)) if m else {}
+            calculated_score = float(eval_data.get("score", raw_score))
+            details = eval_data
+        except Exception:
+            calculated_score = raw_score
+            details = {"feedback": "Evaluated based on MCQ score."}
         profile.database_score = calculated_score
 
     elif category == "mathematics":
-        mcq_score = request_data.get("mcq_score", 7) # out of 10
-        calculated_score = round((mcq_score / 10) * 100, 1)
+        mcq_score = request_data.get("mcq_score", 7)
+        raw_score = round((mcq_score / 10) * 100, 1)
+        try:
+            ai_resp = await ask_gemini(
+                f"Evaluate candidate Mathematics & Statistics for AI. MCQ Correct: {mcq_score}/10.",
+                "You are a Math & Stats Evaluator. Return JSON: {\"score\": <0-100>, \"feedback\": \"<concise feedback>\"}"
+            )
+            m = re.search(r'\{.*\}', ai_resp, re.DOTALL)
+            eval_data = json.loads(m.group(0)) if m else {}
+            calculated_score = float(eval_data.get("score", raw_score))
+            details = eval_data
+        except Exception:
+            calculated_score = raw_score
+            details = {"feedback": "Evaluated based on MCQ score."}
         profile.math_score = calculated_score
 
     elif category == "projects":

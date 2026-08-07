@@ -122,4 +122,9 @@ export const skillService = {
     const response = await api.post(`/skills/360/complete-roadmap-task/${taskId}`);
     return response.data;
   },
+
+  async rescan360Profile() {
+    const response = await api.post('/skills/360/rescan');
+    return response.data;
+  },
 };
