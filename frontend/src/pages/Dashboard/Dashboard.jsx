@@ -519,8 +519,8 @@ const Dashboard = () => {
                 <ArrowUpRight size={11} /> +6.5% this month
               </span>
             </div>
-            <div style={{ height: 200 }}>
-              <ResponsiveContainer width="100%" height="100%">
+            <div style={{ height: 200, width: '100%', minWidth: 0 }}>
+              <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={150}>
                 <AreaChart data={trendData} margin={{ top: 4, right: 4, left: -28, bottom: 0 }}>
                   <defs>
                     <linearGradient id="pgGrad" x1="0" y1="0" x2="0" y2="1">
@@ -547,8 +547,8 @@ const Dashboard = () => {
               <span style={{ fontSize: 36, fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--text-1)' }}>22.8h</span>
               <span style={{ fontSize: 13, color: 'var(--text-2)' }}>this week</span>
             </div>
-            <div style={{ height: 200 }}>
-              <ResponsiveContainer width="100%" height="100%">
+            <div style={{ height: 200, width: '100%', minWidth: 0 }}>
+              <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={150}>
                 <BarChart data={activityData} margin={{ top: 4, right: 4, left: -28, bottom: 0 }} barSize={18}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false}/>
                   <XAxis dataKey="day" tick={{ fontSize: 11, fill: 'var(--text-3)' }} axisLine={false} tickLine={false}/>
