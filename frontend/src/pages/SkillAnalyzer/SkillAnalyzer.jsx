@@ -157,24 +157,28 @@ export default function SkillAnalyzer() {
   };
 
   // Open Category Assessment Modal with Controlled Initial Defaults
-  const openCategoryModal = (cat) => {
-    setActiveTestCategory(cat);
+  const openCategoryModal = (cat, label = null) => {
+    const categoryKey = (typeof cat === 'object' && cat !== null) ? cat.cat : (cat || 'programming');
+    const categoryLabel = label || ((typeof cat === 'object' && cat !== null) ? cat.label : String(cat || 'Category'));
+
+    setActiveTestCategory({ cat: categoryKey, label: categoryLabel });
     setTestResult(null);
-    if (cat === 'programming') {
+
+    if (categoryKey === 'programming') {
       setTestFormInput({
         mcq_score: 16,
         code: "def binary_search(arr, target):\n    low, high = 0, len(arr) - 1\n    while low <= high:\n        mid = (low + high) // 2\n        if arr[mid] == target: return mid\n        elif arr[mid] < target: low = mid + 1\n        else: high = mid - 1\n    return -1"
       });
-    } else if (cat === 'projects') {
+    } else if (categoryKey === 'projects') {
       setTestFormInput({
         repo_url: "https://github.com/user/ai-platform",
         tech_stack: "React, FastAPI, PyTorch, Docker"
       });
-    } else if (cat === 'communication') {
+    } else if (categoryKey === 'communication') {
       setTestFormInput({
         transcript: "I am a software engineer with expertise in building full stack applications and fine-tuning machine learning models for production."
       });
-    } else if (cat === 'softskills') {
+    } else if (categoryKey === 'softskills') {
       setTestFormInput({
         answers: ["When a teammate misses a deadline, I first check in to understand any blockers, offer technical assistance, and re-align our sprint milestones."]
       });
@@ -217,10 +221,11 @@ export default function SkillAnalyzer() {
   // Submit Category Assessment with Real-time AI Feedback
   const handleCategorySubmit = async () => {
     if (!activeTestCategory) return;
+    const catKey = typeof activeTestCategory === 'object' ? activeTestCategory.cat : activeTestCategory;
     try {
       setTestSubmitting(true);
       const payload = {
-        category: activeTestCategory,
+        category: catKey,
         ...testFormInput
       };
       const res = await skillService.assessCategory360(payload);
@@ -504,82 +509,94 @@ export default function SkillAnalyzer() {
       </div>
 
       {/* Category Test Modal */}
-      {activeTestCategory && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999 }}>
-          <div style={{ background: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', width: '90%', maxWidth: 540, padding: 24, boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, textTransform: 'capitalize', color: '#0f172a' }}>
-                {activeTestCategory} Assessment Test
-              </h3>
-              <button onClick={() => setActiveTestCategory(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
-                <X size={20} />
-              </button>
-            </div>
+      {activeTestCategory && (() => {
+        const currentCatKey = (typeof activeTestCategory === 'object' ? activeTestCategory.cat : activeTestCategory) || 'programming';
+        const displayLabel = (typeof activeTestCategory === 'object' ? activeTestCategory.label : activeTestCategory) || 'Skill';
 
-            {testResult ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <div style={{ textAlign: 'center', background: 'rgba(124,58,237,0.06)', padding: 20, borderRadius: 12, border: '1px solid rgba(124,58,237,0.2)' }}>
-                  <span style={{ fontSize: '2rem', fontWeight: 900, color: '#7C3AED' }}>{testResult.score_achieved} / 100</span>
-                  <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#475569', fontWeight: 600 }}>Category Assessment Score</p>
+        return (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999 }}>
+            <div style={{ background: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', width: '90%', maxWidth: 540, padding: 24, boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, textTransform: 'capitalize', color: '#0f172a' }}>
+                  {displayLabel} Assessment Test
+                </h3>
+                <button onClick={() => setActiveTestCategory(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
+                  <X size={20} />
+                </button>
+              </div>
+
+              {testResult ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div style={{ textAlign: 'center', background: 'rgba(124,58,237,0.06)', padding: 20, borderRadius: 12, border: '1px solid rgba(124,58,237,0.2)' }}>
+                    <span style={{ fontSize: '2rem', fontWeight: 900, color: '#7C3AED' }}>{testResult.score_achieved} / 100</span>
+                    <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#475569', fontWeight: 600 }}>Category Assessment Score</p>
+                  </div>
+                  {testResult.details && (
+                    <pre style={{ background: '#f8fafc', padding: 12, borderRadius: 8, fontSize: '0.75rem', color: '#334155', overflowX: 'auto', margin: 0 }}>
+                      {JSON.stringify(testResult.details, null, 2)}
+                    </pre>
+                  )}
+                  <button onClick={() => setActiveTestCategory(null)} style={{ padding: 12, background: '#7C3AED', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}>
+                    Close & View Updated Profile
+                  </button>
                 </div>
-                {testResult.details && (
-                  <pre style={{ background: '#f8fafc', padding: 12, borderRadius: 8, fontSize: '0.75rem', color: '#334155', overflowX: 'auto', margin: 0 }}>
-                    {JSON.stringify(testResult.details, null, 2)}
-                  </pre>
-                )}
-                <button onClick={() => setActiveTestCategory(null)} style={{ padding: 12, background: '#7C3AED', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}>
-                  Close & View Updated Profile
-                </button>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                {activeTestCategory === 'programming' && (
-                  <>
-                    <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a' }}>MCQ Correct Answers (out of 20):</label>
-                    <input type="number" max="20" min="0" value={testFormInput.mcq_score ?? 16} onChange={e => setTestFormInput({ ...testFormInput, mcq_score: parseInt(e.target.value) || 0 })} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
-                    <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a' }}>Your Python Code Submission:</label>
-                    <textarea rows="4" value={testFormInput.code ?? ''} onChange={e => setTestFormInput({ ...testFormInput, code: e.target.value })} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: 'monospace' }} />
-                  </>
-                )}
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {currentCatKey === 'programming' && (
+                    <>
+                      <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a' }}>MCQ Correct Answers (out of 20):</label>
+                      <input type="number" max="20" min="0" value={testFormInput.mcq_score ?? 16} onChange={e => setTestFormInput({ ...testFormInput, mcq_score: parseInt(e.target.value) || 0 })} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
+                      <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a' }}>Your Python Code Submission:</label>
+                      <textarea rows="4" value={testFormInput.code ?? ''} onChange={e => setTestFormInput({ ...testFormInput, code: e.target.value })} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: 'monospace' }} />
+                    </>
+                  )}
 
-                {activeTestCategory === 'projects' && (
-                  <>
-                    <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a' }}>GitHub Repository URL:</label>
-                    <input type="text" value={testFormInput.repo_url ?? ''} onChange={e => setTestFormInput({ ...testFormInput, repo_url: e.target.value })} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
-                    <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a' }}>Tech Stack & Description:</label>
-                    <input type="text" value={testFormInput.tech_stack ?? ''} onChange={e => setTestFormInput({ ...testFormInput, tech_stack: e.target.value })} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
-                  </>
-                )}
+                  {currentCatKey === 'projects' && (
+                    <>
+                      <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a' }}>GitHub Repository URL:</label>
+                      <input type="text" value={testFormInput.repo_url ?? ''} onChange={e => setTestFormInput({ ...testFormInput, repo_url: e.target.value })} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
+                      <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a' }}>Tech Stack & Description:</label>
+                      <input type="text" value={testFormInput.tech_stack ?? ''} onChange={e => setTestFormInput({ ...testFormInput, tech_stack: e.target.value })} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
+                    </>
+                  )}
 
-                {activeTestCategory === 'communication' && (
-                  <>
-                    <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a' }}>Spoken Response Transcript:</label>
-                    <textarea rows="4" value={testFormInput.transcript ?? ''} onChange={e => setTestFormInput({ ...testFormInput, transcript: e.target.value })} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
-                  </>
-                )}
+                  {currentCatKey === 'communication' && (
+                    <>
+                      <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a' }}>Spoken Response Transcript:</label>
+                      <textarea rows="4" value={testFormInput.transcript ?? ''} onChange={e => setTestFormInput({ ...testFormInput, transcript: e.target.value })} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
+                    </>
+                  )}
 
-                {(activeTestCategory === 'ai' || activeTestCategory === 'database' || activeTestCategory === 'mathematics') && (
-                  <>
-                    <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a' }}>Category MCQ Score (out of 10):</label>
-                    <input type="number" max="10" min="0" value={testFormInput.mcq_score ?? 8} onChange={e => setTestFormInput({ ...testFormInput, mcq_score: parseInt(e.target.value) || 0 })} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
-                  </>
-                )}
+                  {['ai', 'database', 'mathematics'].includes(currentCatKey) && (
+                    <>
+                      <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a' }}>Category MCQ Score (out of 10):</label>
+                      <input type="number" max="10" min="0" value={testFormInput.mcq_score ?? 8} onChange={e => setTestFormInput({ ...testFormInput, mcq_score: parseInt(e.target.value) || 0 })} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
+                    </>
+                  )}
 
-                {activeTestCategory === 'softskills' && (
-                  <>
-                    <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a' }}>Situational Judgment Scenario Response:</label>
-                    <textarea rows="4" value={testFormInput.answers?.[0] ?? ''} onChange={e => setTestFormInput({ ...testFormInput, answers: [e.target.value] })} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
-                  </>
-                )}
+                  {currentCatKey === 'softskills' && (
+                    <>
+                      <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a' }}>Situational Judgment Scenario Response:</label>
+                      <textarea rows="4" value={testFormInput.answers?.[0] ?? ''} onChange={e => setTestFormInput({ ...testFormInput, answers: [e.target.value] })} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
+                    </>
+                  )}
 
-                <button onClick={handleCategorySubmit} disabled={testSubmitting} style={{ padding: 12, background: '#7C3AED', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                  {testSubmitting ? <LoadingSpinner size="sm" /> : <Play size={16} />} Evaluate with AI Engine
-                </button>
-              </div>
-            )}
+                  {!['programming', 'projects', 'communication', 'ai', 'database', 'mathematics', 'softskills'].includes(currentCatKey) && (
+                    <>
+                      <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a' }}>Category Assessment Score (out of 10):</label>
+                      <input type="number" max="10" min="0" value={testFormInput.mcq_score ?? 8} onChange={e => setTestFormInput({ ...testFormInput, mcq_score: parseInt(e.target.value) || 0 })} style={{ padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }} />
+                    </>
+                  )}
+
+                  <button onClick={handleCategorySubmit} disabled={testSubmitting} style={{ padding: 12, background: '#7C3AED', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                    {testSubmitting ? <LoadingSpinner size="sm" /> : <Play size={16} />} Evaluate with AI Engine
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
     </div>
   );
